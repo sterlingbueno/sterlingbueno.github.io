@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #quote-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 50px;
+            color: white;
+        }
+        
+        #quote-container a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .aligned-text {
+            text-align: right;
+            font-weight: bold;
+        }
+
+
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+
+<body>
+
+    <script>
+        let video;
+        let threshold = 0;
+        let thresholdIncrement = 0.5;
+        let freezeVideo = false;
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            video = createCapture(VIDEO);
+            video.size(width, height);
+            video.hide();
+
+            frameRate(6);
+        }
+
+        function draw() {
+
+            drawVideoEffect();
+        }
+
+        function drawVideoEffect() {
+            if (!freezeVideo) {
+
+                threshold += thresholdIncrement;
+
+
+                image(video, 0, 0, width, height);
+
+                if (threshold > 255) {
+
+                    freezeVideo = true;
+                }
+
+                loadPixels();
+
+                for (let i = 0; i < pixels.length; i += 4) {
+                    let brightness = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+
+
+                    let thresholdedValue = brightness > threshold ? 255 : 0;
+
+
+                    pixels[i] = pixels[i + 1] = pixels[i + 2] = thresholdedValue;
+                    pixels[i + 3] = 255;
+                }
+
+                updatePixels();
+            }
+        }
+    </script>
+
+    <center><h1>Patience</h1></center>
+
+    <div id="quote-container"> <i>"[The soul is]... the first actualization of a natural organic <a href="body.html">body</a><br>
+                                That is why there is no need to inquire whether the soul and the body are one,<br>
+                                just as there is no need to ask whether the wax and its shape are one."</i><br>
+                                <span class='aligned-text'>- Aristotle</span>
+
+
+</body>
+
+</html>

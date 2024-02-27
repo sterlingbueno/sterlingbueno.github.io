@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #threshold-slider {
+            width: 80%;
+            position: absolute;
+            bottom: 20px;
+            left: 10%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+
+<body>
+
+    <script>
+        let video;
+        const words = ["body", "corporeal", "flesh", "physical", "material", "form", "entity", "being", "vessel", "soul", "Find the soul to move on", "Use the slider to adjust the threshold"];
+        const fallingWords = [];
+        let thresholdSlider;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            video = createCapture(VIDEO);
+            video.size(width, height);
+            video.hide();
+
+            thresholdSlider = createSlider(0, 255, 127);
+
+            for (let i = 0; i < words.length; i++) {
+                fallingWords[i] = new FallingWord(words[i]);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        function draw() {
+            if (video.loadedmetadata) {
+                
+                video.loadPixels();
+                let thresholdValue = thresholdSlider.value();
+
+                for (let i = 0; i < video.pixels.length; i += 4) {
+                    let r = video.pixels[i];
+                    let g = video.pixels[i + 1];
+                    let b = video.pixels[i + 2];
+                    let brightness = (r + g + b) / 3;
+                    let val = brightness > thresholdValue ? 255 : 0;
+                    video.pixels[i] = val;
+                    video.pixels[i + 1] = val;
+                    video.pixels[i + 2] = val;
+                }
+                video.updatePixels();
+
+                background(0);
+
+                
+                let videoX = (width - video.width) / 2;
+                let videoY = (height - video.height) / 2;
+                image(video, videoX, videoY);
+              
+                for (const word of fallingWords) {
+                    word.update();
+                    word.display();
+
+                    if (word.word === "soul" && word.isClicked()) {
+
+                        window.location.href = "soul.html";
+                    }
+                }
+
+                fill(255);
+                textSize(16);
+                text(`Threshold: ${thresholdValue}`, width / 2, height - 10);
+
+                thresholdSlider.position(width / 2 - thresholdSlider.width / 2, height - 30);
+            }
+        }
+
+        class FallingWord {
+            constructor(word) {
+                this.word = word;
+                this.x = random(width);
+                this.y = random(-100, -100);
+                this.speed = random(1, 5);
+                this.clickableArea = {
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0
+                };
+            }
+
+            update() {
+                this.y += this.speed;
+                if (this.y > height) {
+                    this.y = random(-200, -100);
+                    this.x = random(width);
+                }
+            }
+
+            display() {
+                fill(255);
+                textSize(24);
+                text(this.word, this.x, this.y);
+
+                this.clickableArea = {
+                    x: this.x,
+                    y: this.y - 24,
+                    width: textWidth(this.word),
+                    height: 24
+                };
+            }
+
+            isClicked() {
+                return mouseX >= this.clickableArea.x &&
+                    mouseX <= this.clickableArea.x + this.clickableArea.width &&
+                    mouseY >= this.clickableArea.y &&
+                    mouseY <= this.clickableArea.y + this.clickableArea.height;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
